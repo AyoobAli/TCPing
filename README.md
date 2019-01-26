@@ -1,4 +1,4 @@
-### tcping (v0.1 Beta)
+### TCPing (v0.1 Beta)
 TCPing is a tool that allows you to use a TCP connection to ping a service. It can be used as a replacement of ICMP Ping in case the network doesn't allow ICMP, or as a service live check.
 
 This is a beta release, so please open an issue if you notice an issue.
