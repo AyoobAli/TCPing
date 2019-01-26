@@ -27,7 +27,7 @@ ln -s ~/apps/TCPing/tcping.py ~/bin/tcping
 OR One line installation:
 
 ```bash
-mkdir -p ~/apps/ && cd ~/apps/ && git clone https://github.com/ayoobali/TCPing && cd TCPing && chmod gu+x tcping && ln -s ~/apps/TCPing/tcping.py ~/bin/tcping
+mkdir -p ~/apps/ && cd ~/apps/ && git clone https://github.com/ayoobali/TCPing && cd TCPing && chmod gu+x tcping.py && ln -s ~/apps/TCPing/tcping.py ~/bin/tcping
 ```
 
 
