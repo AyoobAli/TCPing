@@ -2,7 +2,7 @@
 
 ###
 ### Project: TCPing
-### Version: 0.1.1 (Beta)
+### Version: 0.1.2 (Beta)
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -25,7 +25,7 @@ settings['limit']           = 5
 settings['quite']           = False
 settings['ip']              = "127.0.0.1"
 settings['port']            = "80"
-settings['version']         = "v0.1.1 (Beta)"
+settings['version']         = "v0.1.2 (Beta)"
 settings['log']             = ""
 settings['startTimestamp']  = ""
 settings['endTimestamp']    = ""
@@ -169,8 +169,8 @@ def getOp():
 
         parser = OptionParser(usage="%prog -i <IP> -p <Port>", version=vertionHead)
         parser.add_option("-i", "--ip", dest="ipAddr", metavar="IP", help="Target IP Address or Hostname to ping")
-        parser.add_option("-p", "--port", dest="portNum", metavar="Port", help="Port Number to ping (Default 80)")
-        parser.add_option("-n", "--number", dest="limit", metavar="Num", help="Limit number of ping requests (Default 5)")
+        parser.add_option("-p", "--port", dest="portNum", type="int", metavar="Port", help="Port Number to ping (Default 80)")
+        parser.add_option("-n", "--number", dest="limit", type="int", metavar="Num", help="Limit number of ping requests (Default 5)")
         parser.add_option("-s", "--sleep", dest="pingSleep", type="int", metavar="Num", help="Sleep for x milliseconds before ping request (Default 1000)")
         parser.add_option("-t", "--timeout", dest="pingTimeout", type="int", metavar="Num", help="Connection timeout (Default 3)")
         parser.add_option("-v", "--verbose", action="count", dest="verboseLevel", help="Show more information (-vvv to show error messages)")
@@ -193,16 +193,16 @@ def getOp():
                     err(ErrMs, "Can't resolve Hostname " + str(options.ipAddr) + "[" + str(hipAddr) + "]")
                     sys.exit(1)
 
-        if options.portNum != None and options.portNum.isdigit() and int(options.portNum) > 0:
+        if options.portNum != None and int(options.portNum) > 0:
             settings['port'] = int(options.portNum)
 
-        if options.limit != None and options.limit.isdigit() and int(options.limit) > 0:
+        if options.limit != None and int(options.limit) > 0:
             settings['limit'] = int(options.limit)
 
-        if options.pingSleep != None and options.pingSleep.isdigit() and int(options.pingSleep) >= 0:
+        if options.pingSleep != None and int(options.pingSleep) >= 0:
             settings['sleep'] = int(options.pingSleep)
 
-        if  options.pingTimeout != None and options.pingTimeout.isdigit() and int(options.pingTimeout) > 0:
+        if  options.pingTimeout != None and int(options.pingTimeout) > 0:
             settings['timeout'] = int(options.pingTimeout)
 
         if options.quite == True:

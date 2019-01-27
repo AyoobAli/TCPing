@@ -1,4 +1,4 @@
-### TCPing (v0.1.1 Beta)
+### TCPing (v0.1.2 Beta)
 TCPing is a tool that allows you to use a TCP connection to ping a service. It can be used as a replacement of ICMP Ping in case the network doesn't allow ICMP, or as a service live check.
 
 This is a beta release, so please open an issue if you notice an issue.
@@ -61,6 +61,9 @@ This tool is released under MIT License.
 -------
 ### Change Log:
 
+[2019-01-27] v0.1.2 (Beta):
+ - [Fix] Fixed an issue that `--sleep`, `--timeout` and `--number` were throwing an error.
+ 
 [2019-01-27] v0.1.1 (Beta):
  - [Fix] Fixed an error that `sys` and `os` were used but not imported.
  - [Fix] Fixed wrong License Label in source code file.
