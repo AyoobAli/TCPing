@@ -3,7 +3,10 @@ TCPing is a tool that allows you to use a TCP connection to ping a service. It c
 
 This is a beta release, so please open an issue if you notice an issue.
 
-The tools is wrote in Python3 and it needs Python v3 to be installed.
+The tools is written in Python3 and it needs Python v3 to be installed.
+
+![TCPing](.img/TCPing.png)
+
 -------
 ### Install (Linux)
 Simply clone the repository to the location you want:
