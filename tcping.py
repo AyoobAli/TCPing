@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 ###
-### Project: tcping
-### Version: 0.1 (Beta)
+### Project: TCPing
+### Version: 0.1.1 (Beta)
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
-### License: GPLv3
+### License: MIT
 ###
 
 
@@ -13,6 +13,7 @@ from optparse import OptionParser
 import signal
 import datetime
 import socket
+import sys, os
 
 settings = {}
 settings['success']         = 0
@@ -24,7 +25,7 @@ settings['limit']           = 5
 settings['quite']           = False
 settings['ip']              = "127.0.0.1"
 settings['port']            = "80"
-settings['version']         = "v0.1 (Beta)"
+settings['version']         = "v0.1.1 (Beta)"
 settings['log']             = ""
 settings['startTimestamp']  = ""
 settings['endTimestamp']    = ""
@@ -107,7 +108,7 @@ def validIP(ipAddr):
 ###
 def banner():
     try:
-        msg("tcping " + settings['version'])
+        msg("TCPing " + settings['version'])
         msg("---------------------", 1)
         msg("Started at: " + str(settings['startTimestamp'].strftime("%Y-%m-%dT%H:%M:%S")), 1)
         msg("Pinging IP address " + str(settings['ip']) + " on port " + str(settings['port']))
@@ -160,7 +161,7 @@ def footer():
 def getOp():
     try:
         global settings
-        versionTxt = "tcping " + settings['version']
+        versionTxt = "TCPing " + settings['version']
         versionC = len(versionTxt)
         vertionHead = "╔════" + '═'*versionC + "════╗\n"
         vertionHead = vertionHead + "║    " + versionTxt + "    ║\n"
