@@ -2,7 +2,7 @@
 
 ###
 ### Project: TCPing
-### Version: 0.1.2 (Beta)
+### Version: 0.1.3 (Beta)
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -14,6 +14,7 @@ import signal
 import datetime
 import socket
 import sys, os
+import subprocess
 
 settings = {}
 settings['success']         = 0
@@ -25,10 +26,12 @@ settings['limit']           = 5
 settings['quite']           = False
 settings['ip']              = "127.0.0.1"
 settings['port']            = "80"
-settings['version']         = "v0.1.2 (Beta)"
+settings['version']         = "v0.1.3 (Beta)"
 settings['log']             = ""
 settings['startTimestamp']  = ""
 settings['endTimestamp']    = ""
+settings['onCMD']           = ""
+settings['offCMD']          = ""
 
 ###
 ### Signal Handler to exit the application after pressing CTRL+C
@@ -104,6 +107,29 @@ def validIP(ipAddr):
         return False
 
 ###
+### Send a command to the OS, and return array of returnCode, stdout, and stderr
+###
+def cmd(command = None):
+    returnArr = {}
+    returnArr.update({"returnCode": 99})
+    try:
+        if command == None or command == "":
+            return returnArr
+        stdout = ""
+        stderr = ""
+        reCode = subprocess.Popen(command,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stData = reCode.communicate()
+        returnArr.update({"stdout": stData[0].decode("utf-8")})
+        returnArr.update({"stderr": stData[1].decode("utf-8")})
+        returnArr.update({"returnCode": reCode.returncode})
+        reCode.terminate()
+        return returnArr
+    except Exception as ErrMs:
+        returnArr.update({"error": ErrMs})
+        err(ErrMs, "CMD")
+        return returnArr
+
+###
 ### Write the program Banner
 ###
 def banner():
@@ -167,15 +193,17 @@ def getOp():
         vertionHead = vertionHead + "║    " + versionTxt + "    ║\n"
         vertionHead = vertionHead + "╚════" + '═'*versionC + "════╝\n"
 
-        parser = OptionParser(usage="%prog -i <IP> -p <Port>", version=vertionHead)
+        parser = OptionParser(usage="%prog -i <Host> -p <Port>", version=vertionHead)
         parser.add_option("-i", "--ip", dest="ipAddr", metavar="IP", help="Target IP Address or Hostname to ping")
         parser.add_option("-p", "--port", dest="portNum", type="int", metavar="Port", help="Port Number to ping (Default 80)")
         parser.add_option("-n", "--number", dest="limit", type="int", metavar="Num", help="Limit number of ping requests (Default 5)")
-        parser.add_option("-s", "--sleep", dest="pingSleep", type="int", metavar="Num", help="Sleep for x milliseconds before ping request (Default 1000)")
+        parser.add_option("-s", "--sleep", dest="pingSleep", type="int", metavar="Num", help="Sleep for x milliseconds after ping request (Default 1000)")
         parser.add_option("-t", "--timeout", dest="pingTimeout", type="int", metavar="Num", help="Connection timeout (Default 3)")
         parser.add_option("-v", "--verbose", action="count", dest="verboseLevel", help="Show more information (-vvv to show error messages)")
         parser.add_option("-q", "--quite", action="store_true", dest="quite", help="Don't print any output")
         parser.add_option("-l", "--log", dest="logFile", metavar="File", help="Log output to a file (Will log even with option -q)")
+        parser.add_option("--online-cmd", dest="onCMD", metavar="Command", help="Execute shell command for each online status (Use with caution). Available variables ({#NO#}, {#DATE#}, {#IP#}, {#PORT#}, {#STATUS#} and {#RESPONSE#})")
+        parser.add_option("--offline-cmd", dest="offCMD", metavar="Command", help="Execute shell command for each offline status (Use with caution). Available variables ({#NO#}, {#DATE#}, {#IP#}, {#PORT#}, {#STATUS#} and {#RESPONSE#})")
 
         (options, args) = parser.parse_args()
 
@@ -196,7 +224,7 @@ def getOp():
         if options.portNum != None and int(options.portNum) > 0:
             settings['port'] = int(options.portNum)
 
-        if options.limit != None and int(options.limit) > 0:
+        if options.limit != None and int(options.limit) > -1:
             settings['limit'] = int(options.limit)
 
         if options.pingSleep != None and int(options.pingSleep) >= 0:
@@ -210,6 +238,12 @@ def getOp():
 
         if options.logFile != None:
             settings['log'] = str(options.logFile)
+
+        if options.onCMD != None:
+            settings['onCMD'] = str(options.onCMD)
+
+        if options.offCMD != None:
+            settings['offCMD'] = str(options.offCMD)
 
     except Exception as ErrMs:
         err(ErrMs, "GetOp")
@@ -225,19 +259,20 @@ if __name__ == "__main__":
         settings['startTimestamp'] = datetime.datetime.now()
         banner()
 
-        for i in range(1, int(settings['limit'])+1):
-            if settings['sleep'] > 0:
-                sleep(settings['sleep']/1000)
+        i = 1
+        while True:
 
+            pNo = str(format(i, '03'))
             pSTime = datetime.datetime.now()
             pStat = tcping()
             pETime = datetime.datetime.now()
             pingTime = pETime - pSTime
+            pSTime = str(pSTime.strftime("%Y-%m-%dT%H:%M:%S"))
             pingTime = pingTime.total_seconds()
             pingTime = "{:.3f}".format(pingTime)
 
-            pMSG = str(format(i, '03')) + ". "
-            pMSG = pMSG + str(pSTime.strftime("%Y-%m-%dT%H:%M:%S"))
+            pMSG = pNo + ". "
+            pMSG = pMSG + pSTime
             pMSG = pMSG + " IP " + str(settings['ip'])
             pMSG = pMSG + " on port "
             if len(str(settings['port'])) < 4:
@@ -247,16 +282,47 @@ if __name__ == "__main__":
             else:
                 pMSG = pMSG + str(settings['port'])
 
+            cmdRes = ""
             if pStat == True:
                 pMSG = pMSG + " is online "
                 settings['success'] += 1
+
+                if str(settings['onCMD']) != "":
+                    cmdStr = str(settings['onCMD'])
+                    cmdStr = cmdStr.replace("{#NO#}", pNo)
+                    cmdStr = cmdStr.replace("{#DATE#}", pSTime)
+                    cmdStr = cmdStr.replace("{#IP#}", str(settings['ip']))
+                    cmdStr = cmdStr.replace("{#PORT#}", str(settings['port']))
+                    cmdStr = cmdStr.replace("{#STATUS#}", "Online")
+                    cmdStr = cmdStr.replace("{#RESPONSE#}", str(pingTime))
+                    cmdRes = cmd(str(cmdStr))
             else:
                 pMSG = pMSG + " is offline"
                 settings['failed'] += 1
 
+                if str(settings['offCMD']) != "":
+                    cmdStr = str(settings['offCMD'])
+                    cmdStr = cmdStr.replace("{#NO#}", pNo)
+                    cmdStr = cmdStr.replace("{#DATE#}", pSTime)
+                    cmdStr = cmdStr.replace("{#IP#}", str(settings['ip']))
+                    cmdStr = cmdStr.replace("{#PORT#}", str(settings['port']))
+                    cmdStr = cmdStr.replace("{#STATUS#}", "Offline")
+                    cmdStr = cmdStr.replace("{#RESPONSE#}", str(pingTime))
+                    cmdRes = cmd(str(cmdStr))
+
             pMSG = pMSG + " (" + str(pingTime) + " Second)"
 
             msg(pMSG)
+            if isinstance(cmdRes, dict) and 'stdout' in cmdRes:
+                msg(cmdRes['stdout'], 2)
+
+            if int(settings['limit']) > 0:
+                if int(settings['limit']) <= i:
+                    break
+            i += 1
+
+            if settings['sleep'] > 0:
+                sleep(settings['sleep']/1000)
 
         settings['endTimestamp'] = datetime.datetime.now()
         footer()
