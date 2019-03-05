@@ -2,7 +2,7 @@
 
 ###
 ### Project: TCPing
-### Version: 0.2.0 (Beta)
+### Version: 0.2.1 (Beta)
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -16,6 +16,7 @@ import socket
 import sys, os
 import subprocess
 import requests
+import random
 
 settings = {}
 settings['success']         = 0
@@ -27,7 +28,7 @@ settings['limit']           = 5
 settings['quite']           = False
 settings['ip']              = "127.0.0.1"
 settings['port']            = "80"
-settings['version']         = "v0.2.0 (Beta)"
+settings['version']         = "v0.2.1 (Beta)"
 settings['log']             = ""
 settings['startTimestamp']  = ""
 settings['endTimestamp']    = ""
@@ -36,7 +37,7 @@ settings['offCMD']          = ""
 settings['toOnlineCMD']     = ""
 settings['toOfflineCMD']    = ""
 settings['lastStt']         = ""
-settings['updateURL']       = "https://raw.githubusercontent.com/AyoobAli/TCPing/master/README.md"
+settings['updateURL']       = "https://raw.githubusercontent.com/AyoobAli/TCPing/master/README.md?" + str(random.randint(100,1000))
 
 ###
 ### Signal Handler to exit the application after pressing CTRL+C
@@ -264,7 +265,7 @@ def getOp():
                 updateRes = requests.get(settings['updateURL'], stream=True)
                 crVersion = "### TCPing " + settings['version']
                 for line in updateRes.iter_lines():
-                    if line.decode("utf-8") != "### TCPing " + settings['version']:
+                    if line.decode("utf-8") != crVersion:
                         msg("A new version of TCPing is available.")
                         msg("Goto: https://github.com/AyoobAli/TCPing")
                         msg("")
