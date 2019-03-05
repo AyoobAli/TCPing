@@ -80,6 +80,8 @@ For more options type `tcping -h`
 -------
 ### ToDo:
 
+ - Connect to a database to store all data and save last status.
+ - Get target Hosts:Ports from file to ping multiple services.
  - Send HTTP request when target status changes (Online/Offline).
  - ~~Run shell command when target status changes from online to offline and vice versa.~~
  - ~~Run shell command if target is Offline.~~
