@@ -1,4 +1,4 @@
-### TCPing (v0.1.3 Beta)
+### TCPing v0.2.0 (Beta)
 TCPing is a tool that allows you to use a TCP connection to ping a service. It can be used as a replacement of ICMP Ping in case the network doesn't allow ICMP, or as a service live check.
 
 This is a beta release, so please open an issue if you notice an issue.
@@ -10,7 +10,9 @@ The tools is written in Python3 and it needs Python v3 to be installed.
 -------
 ### Install (Linux)
 Simply clone the repository to the location you want:
+
 (Example: you want to place it in `~/apps/`
+
 ```Bash
 mkdir -p ~/apps/
 cd ~/apps/
@@ -30,7 +32,30 @@ ln -s ~/apps/TCPing/tcping.py ~/bin/tcping
 OR One line installation:
 
 ```bash
-mkdir -p ~/apps/ && cd ~/apps/ && git clone https://github.com/ayoobali/TCPing && cd TCPing && chmod gu+x tcping.py && ln -s ~/apps/TCPing/tcping.py ~/bin/tcping
+mkdir -p ~/apps/ && mkdir -p ~/bin/ && cd ~/apps/ && git clone https://github.com/ayoobali/TCPing && cd TCPing && chmod gu+x tcping.py && ln -s ~/apps/TCPing/tcping.py ~/bin/tcping
+```
+
+-------
+### Update
+
+To update TCPing to the latest version, navigate to the directory where TCPing is located and run the command `git pull`
+
+If you installed TCPing using the above command, you can simply update it using the following command:
+```Bash
+cd ~/apps/TCPing/
+git pull
+```
+
+
+-------
+### Uninstall (Linux)
+
+To remove TCPing from your system just delete the downloaded files.
+
+If you installed it using the above command, you can simply uninstall it using the following command:
+```Bash
+rm ~/bin/tcping
+rm -rf ~/apps/TCPing
 ```
 
 
@@ -56,7 +81,7 @@ For more options type `tcping -h`
 ### ToDo:
 
  - Send HTTP request when target status changes (Online/Offline).
- - Run shell command when target status changes from online to offline and vice versa.
+ - ~~Run shell command when target status changes from online to offline and vice versa.~~
  - ~~Run shell command if target is Offline.~~
  - ~~Run shell command if target is Online.~~ 
 
@@ -70,7 +95,17 @@ This tool is released under MIT License.
 -------
 ### Change Log:
 
-[2019-01-31] v0.1.3 (Beta):.
+[2019-03-05] v0.2.0 (Beta):
+ - [Add] Added option `--to-offline-cmd` that allows execution of shell command onetime when the status changes from `Online` to `Offline`.
+ - [Add] Added option `--to-online-cmd` that allows execution of shell command onetime when the status changes from `Offline` to `Online`.
+ - [Add] Added option `--update` to check if there is a new version of TCPing.
+ - [Fix] Minor fixes.
+
+   Note: in the options `--to-offline-cmd` and `--to-online-cmd` you can use the following variables to be automatically replaced.
+        `{#NO#}`, `{#DATE#}`, `{#IP#}`, `{#PORT#}`, `{#STATUS#}` and `{#RESPONSE#}`
+        Example: `tcping -i example.com -p 443 -n 0 -s 10000 -q --to-offline-cmd 'curl "http://alertsystem.tld/?ip={#IP#}&port={#PORT#}&status={#STATUS#}"'`
+
+[2019-01-31] v0.1.3 (Beta):
  - [Add] Added option `--online-cmd` that allows execution of shell commands for each online status.
  - [Add] Added option `--offline-cmd` that allows execution of shell commands for each offline status.
  - [Mod] Modified the option `-n` and `--number` to allow the value `0` for infinite ping requests.

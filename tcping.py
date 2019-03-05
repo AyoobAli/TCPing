@@ -2,7 +2,7 @@
 
 ###
 ### Project: TCPing
-### Version: 0.1.3 (Beta)
+### Version: 0.2.0 (Beta)
 ### Creator: Ayoob Ali ( www.AyoobAli.com )
 ### License: MIT
 ###
@@ -15,6 +15,7 @@ import datetime
 import socket
 import sys, os
 import subprocess
+import requests
 
 settings = {}
 settings['success']         = 0
@@ -26,12 +27,16 @@ settings['limit']           = 5
 settings['quite']           = False
 settings['ip']              = "127.0.0.1"
 settings['port']            = "80"
-settings['version']         = "v0.1.3 (Beta)"
+settings['version']         = "v0.2.0 (Beta)"
 settings['log']             = ""
 settings['startTimestamp']  = ""
 settings['endTimestamp']    = ""
 settings['onCMD']           = ""
 settings['offCMD']          = ""
+settings['toOnlineCMD']     = ""
+settings['toOfflineCMD']    = ""
+settings['lastStt']         = ""
+settings['updateURL']       = "https://raw.githubusercontent.com/AyoobAli/TCPing/master/README.md"
 
 ###
 ### Signal Handler to exit the application after pressing CTRL+C
@@ -204,6 +209,9 @@ def getOp():
         parser.add_option("-l", "--log", dest="logFile", metavar="File", help="Log output to a file (Will log even with option -q)")
         parser.add_option("--online-cmd", dest="onCMD", metavar="Command", help="Execute shell command for each online status (Use with caution). Available variables ({#NO#}, {#DATE#}, {#IP#}, {#PORT#}, {#STATUS#} and {#RESPONSE#})")
         parser.add_option("--offline-cmd", dest="offCMD", metavar="Command", help="Execute shell command for each offline status (Use with caution). Available variables ({#NO#}, {#DATE#}, {#IP#}, {#PORT#}, {#STATUS#} and {#RESPONSE#})")
+        parser.add_option("--to-offline-cmd", dest="toOfflineCMD", metavar="Command", help="Execute shell command when server status changes from online to offline (Use with caution). Available variables ({#NO#}, {#DATE#}, {#IP#}, {#PORT#}, {#STATUS#} and {#RESPONSE#})")
+        parser.add_option("--to-online-cmd", dest="toOnlineCMD", metavar="Command", help="Execute shell command when server status changes from offline to online (Use with caution). Available variables ({#NO#}, {#DATE#}, {#IP#}, {#PORT#}, {#STATUS#} and {#RESPONSE#})")
+        parser.add_option("--update", action="store_true", dest="checkUpdate", help="Check if there is a new version of TCPing")
 
         (options, args) = parser.parse_args()
 
@@ -218,7 +226,7 @@ def getOp():
                 if validIP(hipAddr) == True:
                     settings['ip'] = str(hipAddr)
                 else:
-                    err(ErrMs, "Can't resolve Hostname " + str(options.ipAddr) + "[" + str(hipAddr) + "]")
+                    err("Can't resolve Hostname " + str(options.ipAddr) + "[" + str(hipAddr) + "]", "DNS")
                     sys.exit(1)
 
         if options.portNum != None and int(options.portNum) > 0:
@@ -244,6 +252,26 @@ def getOp():
 
         if options.offCMD != None:
             settings['offCMD'] = str(options.offCMD)
+
+        if options.toOfflineCMD != None:
+            settings['toOfflineCMD'] = str(options.toOfflineCMD)
+
+        if options.toOnlineCMD != None:
+            settings['toOnlineCMD'] = str(options.toOnlineCMD)
+
+        try:
+            if options.checkUpdate == True:
+                updateRes = requests.get(settings['updateURL'], stream=True)
+                crVersion = "### TCPing " + settings['version']
+                for line in updateRes.iter_lines():
+                    if line.decode("utf-8") != "### TCPing " + settings['version']:
+                        msg("A new version of TCPing is available.")
+                        msg("Goto: https://github.com/AyoobAli/TCPing")
+                        msg("")
+                    break
+        except Exception as ErrMs1:
+            err(ErrMs1, "update")
+    
 
     except Exception as ErrMs:
         err(ErrMs, "GetOp")
@@ -283,6 +311,7 @@ if __name__ == "__main__":
                 pMSG = pMSG + str(settings['port'])
 
             cmdRes = ""
+            cmdToRes = ""
             if pStat == True:
                 pMSG = pMSG + " is online "
                 settings['success'] += 1
@@ -296,6 +325,19 @@ if __name__ == "__main__":
                     cmdStr = cmdStr.replace("{#STATUS#}", "Online")
                     cmdStr = cmdStr.replace("{#RESPONSE#}", str(pingTime))
                     cmdRes = cmd(str(cmdStr))
+                    cmdStr = ""
+
+                if str(settings['toOnlineCMD']) != "" and str(settings['lastStt']) == "offline":
+                    cmdStr = str(settings['toOnlineCMD'])
+                    cmdStr = cmdStr.replace("{#NO#}", pNo)
+                    cmdStr = cmdStr.replace("{#DATE#}", pSTime)
+                    cmdStr = cmdStr.replace("{#IP#}", str(settings['ip']))
+                    cmdStr = cmdStr.replace("{#PORT#}", str(settings['port']))
+                    cmdStr = cmdStr.replace("{#STATUS#}", "Online")
+                    cmdStr = cmdStr.replace("{#RESPONSE#}", str(pingTime))
+                    cmdToRes = cmd(str(cmdStr))
+
+                settings['lastStt'] = "online"
             else:
                 pMSG = pMSG + " is offline"
                 settings['failed'] += 1
@@ -310,11 +352,26 @@ if __name__ == "__main__":
                     cmdStr = cmdStr.replace("{#RESPONSE#}", str(pingTime))
                     cmdRes = cmd(str(cmdStr))
 
+                if str(settings['toOfflineCMD']) != "" and str(settings['lastStt']) == "online":
+                    cmdStr = str(settings['toOfflineCMD'])
+                    cmdStr = cmdStr.replace("{#NO#}", pNo)
+                    cmdStr = cmdStr.replace("{#DATE#}", pSTime)
+                    cmdStr = cmdStr.replace("{#IP#}", str(settings['ip']))
+                    cmdStr = cmdStr.replace("{#PORT#}", str(settings['port']))
+                    cmdStr = cmdStr.replace("{#STATUS#}", "Offline")
+                    cmdStr = cmdStr.replace("{#RESPONSE#}", str(pingTime))
+                    cmdToRes = cmd(str(cmdStr))
+
+                settings['lastStt'] = "offline"
+
             pMSG = pMSG + " (" + str(pingTime) + " Second)"
 
             msg(pMSG)
             if isinstance(cmdRes, dict) and 'stdout' in cmdRes:
                 msg(cmdRes['stdout'], 2)
+
+            if isinstance(cmdToRes, dict) and 'stdout' in cmdToRes:
+                msg(cmdToRes['stdout'], 2)
 
             if int(settings['limit']) > 0:
                 if int(settings['limit']) <= i:
