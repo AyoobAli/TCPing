@@ -28,7 +28,7 @@ settings['limit']           = 5
 settings['quite']           = False
 settings['ip']              = "127.0.0.1"
 settings['port']            = "80"
-settings['version']         = "v0.2.1 (Beta)"
+settings['version']         = "v0.2.2 (Beta)"
 settings['log']             = ""
 settings['startTimestamp']  = ""
 settings['endTimestamp']    = ""
@@ -269,7 +269,10 @@ def getOp():
                         msg("A new version of TCPing is available.")
                         msg("Goto: https://github.com/AyoobAli/TCPing")
                         msg("")
+                        sys.exit(0)
                     break
+                msg("You are running the latest version of TCPing.")
+                sys.exit(0)
         except Exception as ErrMs1:
             err(ErrMs1, "update")
     
